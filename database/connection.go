@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"strconv"
 
 	"github.com/rahadirafsanjani/notes_app/config"
@@ -19,9 +20,10 @@ func ConnectDB() {
 	port, err := strconv.ParseUint(p, 10, 32)
 
 	if err != nil {
-		log.Println("Catched Error")
+		log.Println("Catched Error: ", err)
 	}
 
+	// Create the database connection string (DSN)
 	dsn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.Config("DB_HOST"), port, config.Config("DB_USER"), config.Config("DB_PASSWORD"), config.Config("DB_NAME"))
 	DB, err = gorm.Open(postgres.Open(dsn))
 
@@ -31,14 +33,20 @@ func ConnectDB() {
 
 	fmt.Println("Connection Opened to Database")
 
-	DB, err = gorm.Open(postgres.Open(dsn))
-
-	if err != nil {
-		panic("failed to connect database")
+	// Models to migrate
+	models := []interface{}{
+		&model.Notes{}, // Add all the models you want to migrate here
+		&model.Labels{},
+		&model.LabelNotes{},
+		// Add other models here as needed
 	}
 
-	fmt.Println("Connection Opened to Database")
+	// Automatically migrate each model
+	for _, model := range models {
+		if err := DB.AutoMigrate(model); err != nil {
+			log.Fatalf("failed to migrate model %v: %v", reflect.TypeOf(model).Elem(), err)
+		}
+	}
 
-	DB.AutoMigrate(&model.Notes{})
 	fmt.Println("Database Migrated")
 }
