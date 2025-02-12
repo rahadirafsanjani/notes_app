@@ -1,13 +1,12 @@
 package model
 
-import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-)
+import "time"
 
 type Notes struct {
-	gorm.Model
-	id          uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
-	Title       string    `gorm:"type:varchar(255);not null" json:"title"`
-	Description string    `gorm:"type:text" json:"description"`
+	ID          uint      `gorm:"primaryKey"`
+	Title       string    `gorm:"size:255;not null"`
+	SubTitle    string    `gorm:"size:255;uniqueIndex;not null"`
+	Description string    `gorm:"text;uniqueIndex;not null"`
+	CreatedAt   time.Time `gorm:"autoCreateTime"`
+	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
 }
